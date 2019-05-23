@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="HandheldFriendly" content="True">
+        <meta name="author" content="Michael Wan">
+        <script src="https://code.jquery.com/jquery-3.1.1.js" integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA=" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+        <style>
+        </style>
+    </head>
+    <body>
+        {% load web_extras %}
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="{% url 'web:index' %}">
+                <h4>Karma Server</h4>
+                <h6>Recovering lost cards.</h6>
+            </a>
+            <span>&nbsp;&nbsp;&nbsp;</span>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <button onclick="location.href='/'" 
+                                type="button" class="btn btn-success navbar-btn">
+                            Home
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <br>
+        <div class="container">
+            <button onclick="location.href='/'" type="button" class="btn btn-success navbar-btn">Refresh</button>
+            <br><br>
+            <table class="table table-striped table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Card ID</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">Time</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% ifnotequal requests|length 0 %}
+                        {% for i in requests|length|get_range %}
+                            {% with requests|index:i as cardData %}
+                                <tr class="pool_entry" id="{{cardData}}">
+                                    <th scope="row">{{ i|add:"1" }}</th>
+                                        <th scope="row">{{ cardData|key:"card_id" }}</th>
+                                        <th scope="row">{{ cardData|key:"location" }}</th>
+                                        <th scope="row">{{ cardData|key:"time" }}</th>
+                                        <th scope="row">
+                                            <button class="btn-primary btn-sm">Accept</button>&nbsp;
+                                            <button class="btn-primary btn-sm">Deny</button>
+                                        </th>
+                                </tr>
+                            {% endwith %}
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <th colspan="5">
+                                No lost card requests at the moment.
+                            </th>
+                        </tr>
+                    {% endifnotequal %}
+                </tbody>
+            </table>
+        </div>
+    </body>
+</html>
