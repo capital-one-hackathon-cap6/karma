@@ -6,6 +6,8 @@ import os
 
 import requests
 import base64
+import datetime
+import geocoder
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
@@ -79,11 +81,24 @@ def ocr_view(request):
 
         try:
             full_text = json_data['responses'][0]['fullTextAnnotation']['text']
-            # print(full_text)
             data['msg'] = full_text
             card_data = find_credit_num(full_text)
             print(' '.join(card_data))
             if len(card_data) == 4:
+                # g = geocoder.ip('me');
+                # lat, lon = tuple(g.latlng)
+                # lost_url = "http://c6-karma-server.herokuapp.com/alert"
+                # lost_payload = {
+                #     "location": {
+                #         "lat": lat,
+                #         "lon": lon
+                #     },
+                #     "time": str(datetime.datetime.now()),
+                #     "card_id": ''.join(card_data),
+                #     "status": "N/A"
+                # }
+                # lost_headers = {}
+                # lost_r = requests.post(lost_url, data=json.dumps(lost_payload), headers=lost_headers)
                 data['card_data'] = ' '.join(card_data)
                 return render(request, 'web/found.html', data)
         except Exception as e:
