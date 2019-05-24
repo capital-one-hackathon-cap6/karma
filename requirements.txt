@@ -5,3 +5,4 @@ docutils==0.14
 gunicorn==19.9.0
 psycopg2==2.7.5
 whitenoise==4.0
+requests==2.22.0
