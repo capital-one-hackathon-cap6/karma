@@ -18,14 +18,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js"></script>
 </head>
 
-<body style="background-color: #FFF8E7; font-family:Optimist,Arial,Helvetica,sans-serif;">
+<body style="background-color: white; font-family:Optimist,Arial,Helvetica,sans-serif;">
     <div>
         <div id="content" style="text-align: center">
             <div>
-                <div style="background-color: #004977; padding-top: 2.5%;padding-bottom: 2.5%; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;color:#FFF8E7;font-size:22pt">
+                <div style="background-color: #004977; padding-top: 2.5%;padding-bottom: 2.5%; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;color:white;font-size:22pt">
                     Karma by
                 </div>
-                <div style="background-color: #FFF8E7; padding-top: 2.5%;padding-bottom: 2.5%;">
+                <div style="background-color: white; padding-top: 2.5%;padding-bottom: 2.5%;">
                     <svg class="site-header__logo" width="123" height="49" viewBox="0 0 384.3 133.7"
                         xmlns="http://www.w3.org/2000/svg" aria-label="Capital One">
                         <path fill="#D03027"
@@ -53,22 +53,35 @@
                 <video width="300" height="190" autoplay playsinline id="videoElement"></video>
                 <script>
                     var camfeed = document.getElementById("videoElement");
-                    camfeed.width = screen.width - 25;
+                    camfeed.width = screen.width -25;
                     camfeed.height = camfeed.width/1.586;
                 </script>
             </div>
 
             <div>
-                <div style="padding: 1%; background-color:#0D74Af;color:#FFF8E7;border-color: #d03027; margin: 1%; border-width:thin">
+                <div style="font-size:12pt; padding: 1%; background-color:#0D74Af;color:white;border: solid; border-color: white; margin: 2%; border-width: 1px; border-radius: 15px;">
                     Hover your camera over the lost card.
                 </div>
-                <div style="padding: 1%; background-color:#0D74Af;color:#FFF8E7;border-color: #d03027; margin: 1%; border-width:thin">
+                <div style="font-size:12pt; padding: 1%; background-color:#0D74Af;color:white;border: solid; border-color: white; margin: 2%; border-width:1px; border-radius: 15px;">
                     Be sure to capture the 16 digit number.
                 </div>
-                <div style="padding: 1%; background-color:#0D74Af;color:#FFF8E7;border-color: #d03027; margin: 1%; border-width:thin">
-                    Tap the screen to upload the lost card.
+                <div style="font-size:12pt; padding: 1%; background-color:#0D74Af;color:white;border: solid; border-color: white; margin: 2%; border-width:1px; border-radius: 15px;">
+                    Tap the screen to capture the lost card.
+                </div>
+            </div> 
+
+            <div style="bottom: 3%; align-content: center; position:fixed; width: 100%;">
+                <div style="float:left;width:33%;">
+                    <a href="https://www.capitalone.com/identity-protection/privacy" class="ods-text__body--tiny" target="_self" rel="">Privacy</a>
+                </div>
+                <div style="float:left;width:33%;">
+                    <a href="https://www.capitalone.com/identity-protection/commitment/" class="ods-text__body--tiny" target="_self" rel="">Security</a>
+                </div>
+                <div style="float:left;width:33%;">
+                    <a href="https://www.capitalone.com/legal/terms-conditions" class="ods-text__body--tiny" target="_self" rel="">Terms &amp; Conditions</a>
                 </div>
             </div>
+
         </div>
 
 
