@@ -33,15 +33,15 @@ config = {
 firebase = pyrebase.initialize_app(config).database()
 
 
-def push_data(card_id, lat, lon, time):
+def push_data(card_id, lat, lon, time, status):
     export_data = {
         'card_id': card_id,
         'location': {
             'lat': lat,
-            'long': lon
+            'lon': lon
         },
         'time': time,
-        'status': 'Locked'
+        'status': status
     }
     firebase.child("server_requests").child(card_id).update(export_data)
 
@@ -90,6 +90,7 @@ def get_phone_number_or_invalid(card_id):
         return '+18137898024'
 
 
+@csrf_exempt
 def lock_card(card_id):
     # This kind of endpoint is not available through Nessie
     requests.post(
@@ -140,9 +141,13 @@ def receive_alert(request):
         lat = body['location']['lat']
         lon = body['location']['lon']
         time = body['time']
+        status = 'Locked'
 
-        push_data(card_id, lat, lon, time)
+        push_data(card_id, lat, lon, time, status)
         send_alert(card_id, lat, lon, time, phone_num)
+
+        firebase.child("server_requests").child(
+            card_id).update({'status': 'Text sent'})
 
         return HttpResponse(status=200)
 
@@ -152,7 +157,7 @@ def alert_callback(request):
     if request.method == 'POST':
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
-        print(body['status'])
+        print(body['MessageStatus'])
 
 
 @csrf_exempt
@@ -160,6 +165,11 @@ def message_response(request):
     # Cancel API is not available through Nessie
     if request.method == 'POST':
         print('CANCELING CARD')
+
+        # We had to hardcode this because we don't have an API that can get account ID from phone number
+        firebase.child("server_requests").child(
+            '4358809571058001').update({'status': 'Canceled'})
+
         requests.post(
             f'http://api.reimaginebanking.com/enterprise/accounts/{card_id}?{nessie_key}')
         resp = MessagingResponse()
