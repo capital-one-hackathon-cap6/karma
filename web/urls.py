@@ -8,4 +8,5 @@ urlpatterns = [
     path('', views.index_view, name='index'),
     path('alert', views.receive_alert, name='receive_alert'),
     path('alert_callback', views.alert_callback, name='alert_callback'),
+    path('cancel', views.message_response, name='message_response'),
 ]

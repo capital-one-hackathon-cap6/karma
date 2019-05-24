@@ -158,8 +158,11 @@ def alert_callback(request):
 @csrf_exempt
 def message_response(request):
     # Cancel API is not available through Nessie
-    requests.post('http://api.reimaginebanking.com')
-    resp = MessagingResponse()
-    msg = resp.message(
-        'Your card has been canceled. Follow this link to request a replacement.\nhttps://www.capitalone.com/support-center/bank/card-lost-stolen')
-    return HttpResponse(str(resp))
+    if request.method == 'POST':
+        print('CANCELING CARD')
+        requests.post(
+            f'http://api.reimaginebanking.com/enterprise/accounts/{card_id}?{nessie_key}')
+        resp = MessagingResponse()
+        msg = resp.message(
+            'Your card has been canceled. Follow this link to request a replacement.\nhttps://www.capitalone.com/support-center/bank/card-lost-stolen')
+        return HttpResponse(str(resp))
