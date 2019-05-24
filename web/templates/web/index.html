@@ -46,10 +46,6 @@
                 </div>
 
             <div>
-                <button id="flip-camera-button" class="button flip-button">Flip Camera</button>
-            </div>
-
-            <div>
                 <video width="300" height="190" autoplay playsinline id="videoElement"></video>
                 <script>
                     var camfeed = document.getElementById("videoElement");
@@ -57,6 +53,10 @@
                     camfeed.height = camfeed.width/1.586;
                 </script>
             </div>
+            <br>
+            <div>
+                <button style="outline:none;background-color: lightgray;color:#004977;border-radius: 15px; border:none;border-color:lightgray;text-decoration: none;" id="flip-camera-button" class="button flip-button">Flip Camera</button>
+            </div>    
 
             <div>
                 <div style="font-size:12pt; padding: 1%; background-color:#0D74Af;color:white;border: solid; border-color: white; margin: 2%; border-width: 1px; border-radius: 15px;">
