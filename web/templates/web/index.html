@@ -41,7 +41,6 @@
                         </path>
                     </svg>
                 </div>
-            </div>
 
             <div>
                 <button id="flip-camera-button" class="button flip-button">Flip Camera</button>
@@ -63,150 +62,153 @@
                 </div>
             </div>
         </div>
-    </div>
 
 
-    <span id="loading"></span>
-    <canvas id="canvas" class="hidden-canvas"></canvas>
-    <form id='final-data-form' action="{% url 'web:ocr' %}" method="post" style="display: none">
-        {% csrf_token %}
-        <input type='text' name='export' id='export'>
-    </form>
-</body>
-<script>
-    var currentStream;
-    var isFrontCam = false;
+        <span id="loading"></span>
+        <canvas id="canvas" class="hidden-canvas"></canvas>
+        <form id='final-data-form' action="{% url 'web:ocr' %}" method="post" style="display: none">
+            {% csrf_token %}
+            <input type='text' name='export' id='export'>
+        </form>
+    </body>
+    <script>
+        var currentStream;
+        var isFrontCam = false;
 
-    function setupUIForMode() {
-        var spinner = new Spinner().spin(document.getElementById("loading"));
-        $("#loading").hide();
-        $("#title").text("Scan Card Below");
-    }
-
-    function flipCameraButtonPressed() {
-        if (currentStream) {
-            stopCamera(currentStream);
-            isFrontCam = !isFrontCam;
-            configureVideo();
+        function setupUIForMode() {
+            var spinner = new Spinner().spin(document.getElementById("loading"));
+            $("#loading").hide();
+            // $("#title").text("Scan Card Below");
         }
-    }
 
-    function stopCamera(stream) {
-        stream.getTracks().forEach(track => {
-            track.stop();
-        });
-    }
+        function flipCameraButtonPressed() {
+            if (currentStream) {
+                stopCamera(currentStream);
+                isFrontCam = !isFrontCam;
+                configureVideo();
+            }
+        }
 
-    function captureButtonPressed() {
-        showLoading(true);
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        const video = document.getElementById("videoElement");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-        console.log(imageDataUrl);
-        gcpOCR(imageDataUrl);
-    }
-
-    function show_progress(p) {
-        console.log(p);
-    }
-
-    function gcpOCR(imgDataUrl) {
-        console.log(imgDataUrl);
-        data = {}
-        data['uri'] = imgDataUrl;
-        $('#export').val(JSON.stringify(data));
-        $('#final-data-form').submit();
-    }
-
-    //Utility functions
-    function configureVideo() {
-        //Reference:
-        //https://www.twilio.com/blog/2018/04/choosing-cameras-javascript-mediadevices-api.html,
-        //https://simpl.info/getusermedia/
-        navigator.mediaDevices.enumerateDevices().then(function (devices) {
-            var params;
-            devices = devices.filter(function (el) {
-                return el.kind == "videoinput"
+        function stopCamera(stream) {
+            stream.getTracks().forEach(track => {
+                track.stop();
             });
-            if (devices.length == 1) {
-                params = {
-                    video: true,
-                    audio: false
-                };
-                $("#flip-camera-button").hide();
+        }
+
+        function captureButtonPressed() {
+            showLoading(true);
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
+            const video = document.getElementById("videoElement");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            $('#canvas').css('display', 'none');
+            $('#videoElement').css('display', 'none');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+            console.log(imageDataUrl);
+            gcpOCR(imageDataUrl);
+        }
+
+        function show_progress(p) {
+            console.log(p);
+        }
+
+        function gcpOCR(imgDataUrl) {
+            console.log(imgDataUrl);
+            data = {}
+            data['uri'] = imgDataUrl;
+            $('#export').val(JSON.stringify(data));
+            $('#final-data-form').submit();
+        }
+
+        //Utility functions
+        function configureVideo() {
+            //Reference:
+            //https://www.twilio.com/blog/2018/04/choosing-cameras-javascript-mediadevices-api.html,
+            //https://simpl.info/getusermedia/
+            navigator.mediaDevices.enumerateDevices().then(function (devices) {
+                var params;
+                devices = devices.filter(function (el) {
+                    return el.kind == "videoinput"
+                });
+                if (devices.length == 1) {
+                    params = {
+                        video: true,
+                        audio: false
+                    };
+                    $("#flip-camera-button").hide();
+                }
+                else {
+                    params = {
+                        video: {
+                            facingMode: (isFrontCam ? "user" : "environment")
+                        },
+                        audio: false
+                    }
+                    $("#flip-camera-button").show();
+                }
+                navigator.mediaDevices.getUserMedia(params).then(function (stream) {
+                    const video = document.getElementById("videoElement");
+                    currentStream = stream;
+                    window.stream = stream;
+                    video.srcObject = stream;
+                })
+                    .catch(function (error) {
+                        $.notify(error, "error");
+                    });
+            });
+        }
+
+        function base64EncodedStringtoBlob(dataURI) {
+            var byteString = atob(dataURI.split(',')[1]);
+            var ab = new ArrayBuffer(byteString.length);
+            var ia = new Uint8Array(ab);
+
+            for (var i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], { type: 'image/jpeg' });
+        }
+
+        function showLoading(show) {
+            if (show) {
+                $("#loading").show();
+                $("#content").hide();
             }
             else {
-                params = {
-                    video: {
-                        facingMode: (isFrontCam ? "user" : "environment")
-                    },
-                    audio: false
+                $("#loading").hide();
+                $("#content").show();
+            }
+        }
+
+        function findGetParameter(parameterName) {
+            var result = null, tmp = [];
+            location.search
+                .substr(1)
+                .split("&")
+                .forEach(function (item) {
+                    tmp = item.split("=");
+                    if (tmp[0] === parameterName)
+                        result = decodeURIComponent(tmp[1]);
                 }
-                $("#flip-camera-button").show();
-            }
-            navigator.mediaDevices.getUserMedia(params).then(function (stream) {
-                const video = document.getElementById("videoElement");
-                currentStream = stream;
-                window.stream = stream;
-                video.srcObject = stream;
-            })
-                .catch(function (error) {
-                    $.notify(error, "error");
-                });
-        });
-    }
-
-    function base64EncodedStringtoBlob(dataURI) {
-        var byteString = atob(dataURI.split(',')[1]);
-        var ab = new ArrayBuffer(byteString.length);
-        var ia = new Uint8Array(ab);
-
-        for (var i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
+                );
+            return result;
         }
-        return new Blob([ab], { type: 'image/jpeg' });
-    }
-
-    function showLoading(show) {
-        if (show) {
-            $("#loading").show();
-            $("#content").hide();
-        }
-        else {
-            $("#loading").hide();
-            $("#content").show();
-        }
-    }
-
-    function findGetParameter(parameterName) {
-        var result = null, tmp = [];
-        location.search
-            .substr(1)
-            .split("&")
-            .forEach(function (item) {
-                tmp = item.split("=");
-                if (tmp[0] === parameterName)
-                    result = decodeURIComponent(tmp[1]);
-            }
-            );
-        return result;
-    }
-</script>
-<script>
-    $(document).ready(function () {
-        configureVideo();
-        setupUIForMode();
-        $("#capture-button").on("click", function (event) {
+    </script>
+    <script>
+        $('#videoElement').click(function() {
             captureButtonPressed();
         });
-        $("#flip-camera-button").on("click", function (event) {
-            flipCameraButtonPressed();
+        $(document).ready(function () {
+            configureVideo();
+            setupUIForMode();
+            // $("#capture-button").on("click", function (event) {
+            //     captureButtonPressed();
+            // });
+            $("#flip-camera-button").on("click", function (event) {
+                flipCameraButtonPressed();
+            });
         });
-    });
-</script>
-
+    </script>
 </html>
