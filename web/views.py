@@ -52,6 +52,10 @@ def find_credit_num(s):
 
 def index_view(request):
     data = {}
+    err_type = request.GET.get('err', 'default')
+    data['error_message'] = 'None'
+    if err_type == '100':
+        data['error_message'] = 'Sorry. Bank account was not captured successfully. Please try again.'
     return render(request, 'web/index.html', data)
 
 def ocr_view(request):
@@ -85,26 +89,27 @@ def ocr_view(request):
             card_data = find_credit_num(full_text)
             print(' '.join(card_data))
             if len(card_data) == 4:
-                # g = geocoder.ip('me');
-                # lat, lon = tuple(g.latlng)
-                # lost_url = "http://c6-karma-server.herokuapp.com/alert"
-                # lost_payload = {
-                #     "location": {
-                #         "lat": lat,
-                #         "lon": lon
-                #     },
-                #     "time": str(datetime.datetime.now()),
-                #     "card_id": ''.join(card_data),
-                #     "status": "N/A"
-                # }
-                # lost_headers = {}
-                # lost_r = requests.post(lost_url, data=json.dumps(lost_payload), headers=lost_headers)
+                g = geocoder.ip('me');
+                lat, lon = tuple(g.latlng)
+                lost_url = "http://c6-karma-server.herokuapp.com/alert"
+                lost_payload = {
+                    "location": {
+                        "lat": lat,
+                        "lon": lon
+                    },
+                    "time": str(datetime.datetime.now()),
+                    "card_id": ''.join(card_data),
+                    "status": "N/A"
+                }
+                lost_headers = {}
+                lost_r = requests.post(lost_url, data=json.dumps(lost_payload), headers=lost_headers)
                 data['card_data'] = ' '.join(card_data)
                 return render(request, 'web/found.html', data)
         except Exception as e:
             print("Error", e)
-        return render(request, 'web/index.html', data)
+            return redirect(reverse('web:index') + '?err=' + '100')
     except Exception as e:
         print("Error", e)
-        return render(request, 'web/index.html', data)
+        return redirect(reverse('web:index'))
+    return redirect(reverse('web:index'))
 

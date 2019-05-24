@@ -80,6 +80,10 @@
         </form>
     </body>
     <script>
+        {% ifnotequal error_message 'None' %}
+            $.notify("{{error_message}}", "error");
+        {% endifnotequal %}
+
         var currentStream;
         var isFrontCam = false;
 
