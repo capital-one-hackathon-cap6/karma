@@ -14,6 +14,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.contrib.auth.models import User
 
+'''
+Given the string returned from the OCR algorithm, scrape for the bank number
+'''
+# def find_credit_num(s):
+
+
 def index_view(request):
     data = {}
     return render(request, 'web/index.html', data)
@@ -40,11 +46,7 @@ def ocr_view(request):
 
     headers = {}
     r = requests.post(url, data=json.dumps(payload), headers=headers)
-    # print(json.dumps(str(r.content)))
     json_data = json.loads(r.text)
-
-    # for text in json_data['responses'][0]['textAnnotations']:
-    #     print(text['description'])
 
     try:
         print(json_data['responses'][0]['fullTextAnnotation']['text'])
@@ -52,6 +54,4 @@ def ocr_view(request):
     except Exception as e:
         print("Error", e)
     
-    # print(json_data['responses'][0].keys())
-
     return render(request, 'web/index.html', data)
