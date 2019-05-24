@@ -25,7 +25,7 @@ SECRET_KEY = 'lo03=tute^(!g#m92&$7go@$%24^5x+6&swx2o7s#u)r($)b3_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['a3ab90cd.ngrok.io', 'c6-karma-server.herokuapp.com']
 
 
 # Application definition
