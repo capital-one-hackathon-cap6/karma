@@ -37,12 +37,36 @@ class _CameraAppState extends State<CameraApp> {
 
   @override
   Widget build(BuildContext context) {
+    var size = 100.0;
     if (!controller.value.isInitialized) {
       return Container();
     }
-    return AspectRatio(
-        aspectRatio:
-        controller.value.aspectRatio,
-        child: CameraPreview(controller));
+    return Container(
+      child: new CustomPaint(
+        foregroundPainter: new GuidelinePainter(),
+        child: CameraPreview(controller),
+      )
+    );
   }
+}
+
+class GuidelinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = new Paint()
+      ..strokeWidth = 3.0
+      ..color = Colors.green
+      ..style = PaintingStyle.stroke;
+
+    var margin = 25;
+
+    var width = size.width - margin;
+    var height = width/1.586;
+
+    var rect = Rect.fromLTWH((size.width - width)/2, (size.height - height)/2, width, height);
+    canvas.drawRect(rect, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
