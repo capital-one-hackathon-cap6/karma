@@ -14,6 +14,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.contrib.auth.models import User
 
+from luhn import *
+
 
 '''
 Given the string returned from the OCR algorithm, scrape for the bank number
@@ -40,7 +42,10 @@ def find_credit_num(s):
             ret.append(tmp)
             tmp = []
     ret.sort(key = lambda x: abs(4-len(x)))
-    return ret[0]
+    for r in ret:
+        if verify(''.join(r)):
+            return r
+    return []
 
 
 def index_view(request):
@@ -49,38 +54,42 @@ def index_view(request):
 
 def ocr_view(request):
     data = {}
-    export = json.loads(request.POST['export'])
-    img_uri = export['uri'].replace("data:image/jpeg;base64,", "")
-
-    img_uri = base64.b64encode(base64.b64decode(img_uri)).decode('utf-8')
-    key = 'AIzaSyAi2_rFWbqdsWl10L_i0pzkTlo98kzEkDA'
-
-    url = 'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyBsQnu4Lxmvwmcz6KrpGW3PKldmjR6CCxM'
-    payload = {
-       "requests": [{
-            "image": {
-                "content": img_uri
-            },
-            "features": [{
-                "type": "TEXT_DETECTION"
-            }]
-       }]
-    }
-
-    headers = {}
-    r = requests.post(url, data=json.dumps(payload), headers=headers)
-    json_data = json.loads(r.text)
-
     try:
-        full_text = json_data['responses'][0]['fullTextAnnotation']['text']
-        # print(full_text)
-        data['msg'] = full_text
-        card_data = find_credit_num(full_text)
-        print(' '.join(card_data))
-        if len(card_data) == 4:
-            data['card_data'] = ' '.join(card_data)
-            return render(request, 'web/found.html', data)
+        export = json.loads(request.POST['export'])
+        img_uri = export['uri'].replace("data:image/jpeg;base64,", "")
+
+        img_uri = base64.b64encode(base64.b64decode(img_uri)).decode('utf-8')
+        key = 'AIzaSyAi2_rFWbqdsWl10L_i0pzkTlo98kzEkDA'
+
+        url = 'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyBsQnu4Lxmvwmcz6KrpGW3PKldmjR6CCxM'
+        payload = {
+           "requests": [{
+                "image": {
+                    "content": img_uri
+                },
+                "features": [{
+                    "type": "TEXT_DETECTION"
+                }]
+           }]
+        }
+
+        headers = {}
+        r = requests.post(url, data=json.dumps(payload), headers=headers)
+        json_data = json.loads(r.text)
+
+        try:
+            full_text = json_data['responses'][0]['fullTextAnnotation']['text']
+            # print(full_text)
+            data['msg'] = full_text
+            card_data = find_credit_num(full_text)
+            print(' '.join(card_data))
+            if len(card_data) == 4:
+                data['card_data'] = ' '.join(card_data)
+                return render(request, 'web/found.html', data)
+        except Exception as e:
+            print("Error", e)
+        return render(request, 'web/index.html', data)
     except Exception as e:
         print("Error", e)
-    return render(request, 'web/index.html', data)
+        return render(request, 'web/index.html', data)
 
