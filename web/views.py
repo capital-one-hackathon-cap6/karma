@@ -34,12 +34,12 @@ def find_credit_num(s):
     ret = []
     tmp = []
     for chunk in chunks:
-        if is_number(chunk):
+        if is_number(chunk) and len(tmp) < 4:
             tmp.append(chunk)
         else:
             ret.append(tmp)
             tmp = []
-    ret.sort(key = lambda x: -len(x))
+    ret.sort(key = lambda x: abs(4-len(x)))
     return ret[0]
 
 
@@ -73,9 +73,10 @@ def ocr_view(request):
 
     try:
         full_text = json_data['responses'][0]['fullTextAnnotation']['text']
-        print(full_text)
+        # print(full_text)
         data['msg'] = full_text
         card_data = find_credit_num(full_text)
+        print(' '.join(card_data))
         if len(card_data) == 4:
             data['card_data'] = ' '.join(card_data)
             return render(request, 'web/found.html', data)
