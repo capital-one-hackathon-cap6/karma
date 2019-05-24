@@ -41,11 +41,22 @@ class _CameraAppState extends State<CameraApp> {
     if (!controller.value.isInitialized) {
       return Container();
     }
-    return Container(
-      child: new CustomPaint(
-        foregroundPainter: new GuidelinePainter(),
-        child: CameraPreview(controller),
-      )
+    return Stack(
+      children: <Widget>[
+        new Container(
+          child: new CustomPaint(
+            foregroundPainter: new GuidelinePainter(),
+            child: CameraPreview(controller),
+          ),
+        ),
+        // new Container(
+        //   child: new GestureDetector(
+        //     onTap: (){
+        //       print("Tap");
+        //     },
+        //   )
+        // )
+      ]
     );
   }
 }
