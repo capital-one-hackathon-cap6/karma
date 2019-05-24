@@ -1,169 +1,196 @@
 <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Karma</title>
-        <script src="https://code.jquery.com/jquery-3.1.1.js" integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA=" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js"></script>
-    </head>
-    <body>
-        <div id="content">
-            <h1 id="title" class="title">Scan Card Below</h1>
-            <p>Messages: {{messages}}</p>
-            <video autoplay playsinline id="videoElement"></video>
-            <div id="controls" class="controls">
-                <select id="tag-selector" class="tag-selector"></select>
-                <div class="bottom-left-corner">
+<html>
+
+<head>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karma</title>
+    <script src="https://code.jquery.com/jquery-3.1.1.js"
+        integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js"></script>
+</head>
+
+<body>
+    <div>
+        <div id="content" style="text-align: center">
+            <div class="row">
+                <div class="col-4">
+                    <h1 id="title" class="title">Scan Card Below</h1>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-8">
+                    <p>Messages: {{messages}}</p>
+                </div>
+
+                <div class="col-2">
                     <button id="flip-camera-button" class="button flip-button">Flip Camera</button>
                 </div>
-                <div class="bottom-right-corner">
+
+                <div class="col-2">
                     <button id="capture-button" class="button capture-button">Capture</button>
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-4">
+                    <video width="300" height="190" autoplay playsinline id="videoElement"></video>
+                </div>
+            </div>
         </div>
-        <span id="loading"></span>
-        <canvas id="canvas" class="hidden-canvas"></canvas>
-        <form id='final-data-form'  action="{% url 'web:ocr' %}" method="post" style="display: none">
-            {% csrf_token %}
-            <input type='text' name='export' id='export'>
-        </form>
-    </body>
-    <script>
-        var currentStream;
-        var isFrontCam = false;
+    </div>
 
-        function setupUIForMode() {
-            var spinner = new Spinner().spin(document.getElementById("loading"));
-            $("#loading").hide();
-            $('#tag-selector').hide();
-            $("#title").text("Scan Card Below");
+
+    <span id="loading"></span>
+    <canvas id="canvas" class="hidden-canvas"></canvas>
+    <form id='final-data-form' action="{% url 'web:ocr' %}" method="post" style="display: none">
+        {% csrf_token %}
+        <input type='text' name='export' id='export'>
+    </form>
+</body>
+<script>
+    var currentStream;
+    var isFrontCam = false;
+
+    function setupUIForMode() {
+        var spinner = new Spinner().spin(document.getElementById("loading"));
+        $("#loading").hide();
+        $("#title").text("Scan Card Below");
+    }
+
+    function flipCameraButtonPressed() {
+        if (currentStream) {
+            stopCamera(currentStream);
+            isFrontCam = !isFrontCam;
+            configureVideo();
         }
+    }
 
-        function flipCameraButtonPressed() {
-            if(currentStream) {
-                stopCamera(currentStream);
-                isFrontCam = !isFrontCam;
-                configureVideo();
-            }
-        }
+    function stopCamera(stream) {
+        stream.getTracks().forEach(track => {
+            track.stop();
+        });
+    }
 
-        function stopCamera(stream) {
-            stream.getTracks().forEach(track => {
-              track.stop();
+    function captureButtonPressed() {
+        showLoading(true);
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const video = document.getElementById("videoElement");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        console.log(imageDataUrl);
+        gcpOCR(imageDataUrl);
+    }
+
+    function show_progress(p) {
+        console.log(p);
+    }
+
+    function gcpOCR(imgDataUrl) {
+        console.log(imgDataUrl);
+        data = {}
+        data['uri'] = imgDataUrl;
+        $('#export').val(JSON.stringify(data));
+        $('#final-data-form').submit();
+    }
+
+    //Utility functions
+    function configureVideo() {
+        //Reference:
+        //https://www.twilio.com/blog/2018/04/choosing-cameras-javascript-mediadevices-api.html,
+        //https://simpl.info/getusermedia/
+        navigator.mediaDevices.enumerateDevices().then(function (devices) {
+            var params;
+            devices = devices.filter(function (el) {
+                return el.kind == "videoinput"
             });
-          }
-
-        function captureButtonPressed() {
-            showLoading(true);
-            const canvas = document.getElementById("canvas");
-            const ctx = canvas.getContext("2d");
-            const video = document.getElementById("videoElement");
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0,0, canvas.width, canvas.height);
-            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-            console.log(imageDataUrl);
-            gcpOCR(imageDataUrl);
-        }
-
-        function show_progress(p) {
-            console.log(p);
-        }
-
-        function gcpOCR(imgDataUrl) {
-            console.log(imgDataUrl);
-            data = {}
-            data['uri'] = imgDataUrl;
-            $('#export').val(JSON.stringify(data));
-            $('#final-data-form').submit();
-        }
-
-        //Utility functions
-        function configureVideo() {
-            //Reference:
-            //https://www.twilio.com/blog/2018/04/choosing-cameras-javascript-mediadevices-api.html,
-            //https://simpl.info/getusermedia/
-            navigator.mediaDevices.enumerateDevices().then(function(devices) {
-                var params;
-                devices = devices.filter(function (el) {
-                    return el.kind == "videoinput"
-                });
-                if(devices.length == 1) {
-                    params = {
-                        video: true,
-                        audio: false
-                    };
-                    $("#flip-camera-button").hide();
-                }
-                else {
-                    params = {
-                        video: {
-                            facingMode: (isFrontCam ? "user" : "environment")
-                        },
-                        audio: false
-                    }
-                    $("#flip-camera-button").show();
-                }
-                navigator.mediaDevices.getUserMedia(params).then(function(stream) {
-                    const video = document.getElementById("videoElement");
-                    currentStream = stream;
-                    window.stream = stream;
-                    video.srcObject = stream;
-                })
-                .catch(function(error) {
-                    $.notify(error, "error");
-                });
-            });
-        }
-
-        function base64EncodedStringtoBlob(dataURI) {
-            var byteString = atob(dataURI.split(',')[1]);
-            var ab = new ArrayBuffer(byteString.length);
-            var ia = new Uint8Array(ab);
-
-            for (var i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
-            }
-            return new Blob([ab], { type: 'image/jpeg' });
-        }
-
-        function showLoading(show) {
-            if(show) {
-                $("#loading").show();
-                $("#content").hide();
+            if (devices.length == 1) {
+                params = {
+                    video: true,
+                    audio: false
+                };
+                $("#flip-camera-button").hide();
             }
             else {
-                $("#loading").hide();
-                $("#content").show();
+                params = {
+                    video: {
+                        facingMode: (isFrontCam ? "user" : "environment")
+                    },
+                    audio: false
+                }
+                $("#flip-camera-button").show();
             }
-        }
-
-        function findGetParameter(parameterName) {
-            var result = null,tmp = [];
-            location.search
-                .substr(1)
-                .split("&")
-                .forEach(function (item) {
-                    tmp = item.split("=");
-                    if (tmp[0] === parameterName) 
-                        result = decodeURIComponent(tmp[1]);
-                    }
-                );
-            return result;
-        }
-    </script>
-    <script>
-        $(document).ready(function() {
-            configureVideo();
-            setupUIForMode();
-            $("#capture-button").on("click", function(event) {
-                captureButtonPressed();
-            });
-            $("#flip-camera-button").on("click", function(event) {
-                flipCameraButtonPressed();
-            });
+            navigator.mediaDevices.getUserMedia(params).then(function (stream) {
+                const video = document.getElementById("videoElement");
+                currentStream = stream;
+                window.stream = stream;
+                video.srcObject = stream;
+            })
+                .catch(function (error) {
+                    $.notify(error, "error");
+                });
         });
-    </script>
+    }
+
+    function base64EncodedStringtoBlob(dataURI) {
+        var byteString = atob(dataURI.split(',')[1]);
+        var ab = new ArrayBuffer(byteString.length);
+        var ia = new Uint8Array(ab);
+
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([ab], { type: 'image/jpeg' });
+    }
+
+    function showLoading(show) {
+        if (show) {
+            $("#loading").show();
+            $("#content").hide();
+        }
+        else {
+            $("#loading").hide();
+            $("#content").show();
+        }
+    }
+
+    function findGetParameter(parameterName) {
+        var result = null, tmp = [];
+        location.search
+            .substr(1)
+            .split("&")
+            .forEach(function (item) {
+                tmp = item.split("=");
+                if (tmp[0] === parameterName)
+                    result = decodeURIComponent(tmp[1]);
+            }
+            );
+        return result;
+    }
+</script>
+<script>
+    $(document).ready(function () {
+        configureVideo();
+        setupUIForMode();
+        $("#capture-button").on("click", function (event) {
+            captureButtonPressed();
+        });
+        $("#flip-camera-button").on("click", function (event) {
+            flipCameraButtonPressed();
+        });
+    });
+</script>
+
 </html>
