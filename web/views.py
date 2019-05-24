@@ -78,6 +78,7 @@ def valid_json(body):
 
 
 def get_phone_number_or_invalid(card_id):
+    # This kind of endpoint is not available through Nessie
     response = requests.get(
         f'http://api.reimaginebanking.com/enterprise/customers/{card_id}?{nessie_key}')  # This API doesn't work how we need it too
 
@@ -85,12 +86,12 @@ def get_phone_number_or_invalid(card_id):
         # return response['phone_num']
         return '+18137898024'
     else:
-        # We don't have access to an API that gives customer information from a CC number
         # return 'invalid'
         return '+18137898024'
 
 
 def lock_card(card_id):
+    # This kind of endpoint is not available through Nessie
     requests.post(
         f'http://api.reimaginebanking.com/enterprise/accounts/{card_id}?{nessie_key}')  # Fake API call
 
@@ -107,7 +108,7 @@ def send_alert(card_id, lat, lon, time, phone_num):
                 reverse('web:alert_callback')),
             to=phone_num
         )
-    print("MSG SENT")
+    print("MESSAGE SENT")
 
 
 def index_view(request):
@@ -122,7 +123,7 @@ def index_view(request):
 @csrf_exempt
 def receive_alert(request):
     if request.method == 'POST':
-        print('received request')
+        print('REQUEST RECEIVED')
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
 
@@ -151,11 +152,14 @@ def alert_callback(request):
     if request.method == 'POST':
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
-        print(body['MessageStatus'])
+        print(body['status'])
 
 
 @csrf_exempt
 def message_response(request):
+    # Cancel API is not available through Nessie
+    requests.post('http://api.reimaginebanking.com')
     resp = MessagingResponse()
-    msg = resp.message('Your card has been canceled. Follow this link to request a replacement.\nhttps://www.capitalone.com/support-center/bank/card-lost-stolen')
+    msg = resp.message(
+        'Your card has been canceled. Follow this link to request a replacement.\nhttps://www.capitalone.com/support-center/bank/card-lost-stolen')
     return HttpResponse(str(resp))
