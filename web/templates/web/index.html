@@ -22,6 +22,9 @@
     <div>
         <div id="content" style="text-align: center">
             <div>
+                <div style="background-color: #004977; padding-top: 2.5%;padding-bottom: 2.5%; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;color:#FFF8E7;font-size:22pt">
+                    Karma by
+                </div>
                 <div style="background-color: #FFF8E7; padding-top: 2.5%;padding-bottom: 2.5%;">
                     <svg class="site-header__logo" width="123" height="49" viewBox="0 0 384.3 133.7"
                         xmlns="http://www.w3.org/2000/svg" aria-label="Capital One">
@@ -48,16 +51,21 @@
 
             <div>
                 <video width="300" height="190" autoplay playsinline id="videoElement"></video>
+                <script>
+                    var camfeed = document.getElementById("videoElement");
+                    camfeed.width = screen.width - 25;
+                    camfeed.height = camfeed.width/1.586;
+                </script>
             </div>
 
             <div>
-                <div style="padding: 1%; background-color:#004977;color:#FFF8E7;border-color: #d03027; margin: 1%;">
+                <div style="padding: 1%; background-color:#0D74Af;color:#FFF8E7;border-color: #d03027; margin: 1%; border-width:thin">
                     Hover your camera over the lost card.
                 </div>
-                <div>
+                <div style="padding: 1%; background-color:#0D74Af;color:#FFF8E7;border-color: #d03027; margin: 1%; border-width:thin">
                     Be sure to capture the 16 digit number.
                 </div>
-                <div>
+                <div style="padding: 1%; background-color:#0D74Af;color:#FFF8E7;border-color: #d03027; margin: 1%; border-width:thin">
                     Tap the screen to upload the lost card.
                 </div>
             </div>
