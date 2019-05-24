@@ -5,6 +5,7 @@ import requests
 import string
 import pyrebase
 from twilio.rest import Client
+from twilio.twiml.messaging_response import MessagingResponse
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
@@ -100,9 +101,10 @@ def send_alert(card_id, lat, lon, time, phone_num):
     client = Client(account_sid, auth_token)
     message = client.messages \
         .create(
-            body=f'Alert:\nYour Capital one card, ending in {last_four}, was reported as lost at {time} and has been automatically locked. Follow this link to view the location. Reply CANCEL to cancel your card.\nhttps://www.google.com/maps/@{lat},{lon},19z',
+            body=f'Alert:\nYour Capital one card, ending in {last_four}, was reported as lost at {time} and has been automatically locked. Follow this link to view the location. Reply to this message to cancel your card.\nhttps://www.google.com/maps/@{lat},{lon},19z',
             from_=twilio_num,
-            status_callback=HttpResponseRedirect(reverse('web:alert_callback')),
+            status_callback=HttpResponseRedirect(
+                reverse('web:alert_callback')),
             to=phone_num
         )
     print("MSG SENT")
@@ -150,3 +152,10 @@ def alert_callback(request):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
         print(body['MessageStatus'])
+
+
+@csrf_exempt
+def message_response(request):
+    resp = MessagingResponse()
+    msg = resp.message('Your card has been canceled. Follow this link to request a replacement.\nhttps://www.capitalone.com/support-center/bank/card-lost-stolen')
+    return HttpResponse(str(resp))
